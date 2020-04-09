@@ -1,7 +1,8 @@
 # app.py
+# Rename the folder from 'GameHost' to 'Controller'
 
 # In-project dependencies
-from GameState import GameState
+from DataModel.GameState import GameState
 
 # External dependencies
 from flask import Flask  # import flask
@@ -14,8 +15,9 @@ app = Flask(__name__)  # create an app instance
 def hello():  # call method hello
     return "Hello World!"  # which returns "hello world"
 
+
 @app.route("/newgame")  # at the end point /newgame
-def createNewGame():
+def create_new_game():
 
     game_state = GameState()
 
@@ -23,26 +25,28 @@ def createNewGame():
     json_response = jsonpickle.encode(game_state)
     return json_response
 
+
 @app.route("/restart")  # at the end point /restart
-def restart(gameState):
+def restart(game_state):
     game_state = GameState()
 
-    gameState.restart()
+    game_state.restart()
     # Use JSON pickle to convert to JSON. Native json module can't handle complex classes.
 
     return game_state
 
 
-@app.route("/move")  # at the end point /move
-def makeMove(gameState, somethingSpecifyingMoveMade):
+@app.route("/move/<gameState>")  # at the end point /move
+def make_move(request):
 
     # Use JSON pickle to convert JSON to Python object. Native json module can't handle complex classes.
-    game_state = GameState(gameState)
-    game_state.move(somethingSpecifyingMoveMade)
+    game_state = jsonpickle.decode(request)
+
+    game_state.alter_state()
 
     # Use JSON pickle to convert to JSON. Native json module can't handle complex classes.
-
-    return game_state
+    json_response = jsonpickle.encode(game_state)
+    return json_response
 
 
 if __name__ == "__main__":  # on running python app.py

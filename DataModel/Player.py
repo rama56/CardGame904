@@ -10,7 +10,7 @@ class Position(enum.Enum):
     Six = 6
 
 
-class Player():
+class Player:
     def __init__(self, name, position, team):
         self.name = name
         self.position = position

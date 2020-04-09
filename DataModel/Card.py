@@ -12,6 +12,7 @@ class Number(enum.IntEnum):
     Ten = 3
     King = 2
     Queen = 1
+    # Eight = 0
 
 
 class Suite(enum.Enum):
@@ -25,13 +26,14 @@ class Card():
     def __init__(self, number, suite):
         self.number = number
         self.suite = suite
-        # TODO: REMOVE MAGIC NUMBERS
-        self.id = suite.value * 9 + number.value
+        # TODO - 1 : REMOVE MAGIC NUMBERS. ACCOMMODATE FOR 9 IN 6-PLAYER GAME IN FRONT-END RESOURCES.
+        self.id = (suite.value - 1) * 8 + number.value
 
-def get_valid_cards():
+
+def get_deck():
     valid_cards = []
     for suit in Suite:
         for number in Number:
-            card = Card(suit, number)
+            card = Card(number, suit)
             valid_cards.append(card)
     return valid_cards
