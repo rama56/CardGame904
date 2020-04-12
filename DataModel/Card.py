@@ -1,6 +1,8 @@
 # importing enum for enumerations
 import enum
 
+value_points_mapping = {1: 2, 2: 3, 3: 10, 4: 11, 5: 20, 6: 30, 7: 50, 8: 100}
+
 
 # creating enumerations using class
 class Number(enum.IntEnum):
@@ -22,12 +24,13 @@ class Suite(enum.Enum):
     Clover = 4
 
 
-class Card():
+class Card:
     def __init__(self, number, suite):
         self.number = number
         self.suite = suite
         # TODO - 1 : REMOVE MAGIC NUMBERS. ACCOMMODATE FOR 9 IN 6-PLAYER GAME IN FRONT-END RESOURCES.
         self.id = (suite.value - 1) * 8 + number.value
+        self.closed = False
 
 
 def get_deck():
@@ -37,3 +40,7 @@ def get_deck():
             card = Card(number, suit)
             valid_cards.append(card)
     return valid_cards
+
+
+def get_points(value):
+    return value_points_mapping[value]

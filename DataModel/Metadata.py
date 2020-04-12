@@ -3,12 +3,13 @@ import enum
 
 class GamePhase(enum.Enum):
     Bidding = 1
-    Playing = 2
-    Over = 3
+    TrumpSelection = 2
+    Playing = 3
+    Over = 4
 
 
 class Metadata:
     def __init__(self):
-        self.game_phase = GamePhase.Bidding
+        self.game_phase = GamePhase.Bidding.value
         self.playerCount = 4
         self.winner = -1
