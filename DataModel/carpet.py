@@ -1,4 +1,4 @@
-from DataModel.Card import Card
+from DataModel.card import Card
 
 
 class Carpet:

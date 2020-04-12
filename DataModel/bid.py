@@ -25,12 +25,12 @@ class Bid:
 
         # Bidding closes if someone bids 'full' 904.
         last_bidder = self.bidHistory[-1]
-        if last_bidder[1] == 904:
+        if last_bidder[0] == 904:
             return last_bidder
 
         # Bidding closes if all three other players don't raise.
         if [bid[0] for bid in self.bidHistory[-3:]] == [-1, -1, -1]:
-            return self.bidHistory[-3]
+            return self.bidHistory[-4]
 
         # If the bidding is still in progress, return -1, -1.
         return -1, -1

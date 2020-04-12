@@ -1,18 +1,19 @@
 import random
 import copy
 # Modules
-from DataModel import Player, Card, Metadata, Score, Carpet, Trump
+from DataModel import player, metadata, score, carpet, trump
+from DataModel import card as card_module
 
 # Classes
-from DataModel.Trump import Trump
-from DataModel.Bid import Bid
-from DataModel.Metadata import Metadata
-from DataModel.Score import Score
-from DataModel.Carpet import Carpet
+from DataModel.trump import Trump
+from DataModel.bid import Bid
+from DataModel.metadata import Metadata
+from DataModel.score import Score
+from DataModel.carpet import Carpet
 
 
 def deal_cards(players):
-    deck = Card.get_deck()
+    deck = card_module.get_deck()
 
     random.shuffle(deck)
 
@@ -33,14 +34,14 @@ class GameState:
 
         self.players = []
         self.can_ask_for_trump = False  # TODO : Okay to have it at GameState level instead of inside every player?
-        self.next_player = 1
+        self.next_player = 0
 
         # BID, SCORE, AND TRUMP
         self.bid = Bid()
         self.score = Score()
         self.TrumpCard = Trump()
 
-        self.players = Player.create_players(self.metadata.playerCount)
+        self.players = player.create_players(self.metadata.playerCount)
 
         deal_cards(self.players)
         self.valid_cards = [card.id for card in self.players[self.next_player].cards]
@@ -56,7 +57,7 @@ class GameState:
         self.carpet.South = self.players[2].cards[5]
 
         trump = self.players[0].cards[4]
-        self.TrumpCard = Trump()
+        self.TrumpCard = trump()
 
         self.TrumpCard.suite = trump.suite
         self.TrumpCard.number = trump.number
@@ -78,9 +79,9 @@ class GameState:
         current_player = self.next_player  # TODO : Are we doing a -1 to the index ?
 
         # BIDDING PHASE
-        if state == Metadata.GamePhase.Bidding.value:
+        if state == metadata.GamePhase.Bidding.value:
             self.bid.add_bid(move, current_player)
-            setter, target = self.bid.get_trump_setter_and_target()
+            target, setter = self.bid.get_trump_setter_and_target()
 
             # Bidding closes
             if setter != -1:
@@ -88,12 +89,15 @@ class GameState:
                 self.score = Score.initial_score(target, setter % 2)  # str(setter) + " and " + str((setter + 2) % 4)
 
                 # Change to Trump Selection Step
-                self.metadata.game_phase = Metadata.GamePhase.TrumpSelection.value
+                self.metadata.game_phase = metadata.GamePhase.TrumpSelection.value
                 self.next_player = setter
                 self.valid_cards = [card.id for card in self.players[setter].cards]
 
+            else:
+                self.next_player = (current_player+1) % 4
+
         # TRUMP SELECTION STEP
-        elif state == Metadata.GamePhase.TrumpSelection.value:
+        elif state == metadata.GamePhase.TrumpSelection.value:
 
             # Assign trump card and remove from the player's hand.
             card_for_trump = [card for card in self.players[current_player].cards if card.id == move][0]
@@ -101,7 +105,7 @@ class GameState:
             self.TrumpCard = Trump.trump_from_card(card_for_trump, current_player)
 
             # Change to Playing Phase
-            self.metadata.game_phase = Metadata.GamePhase.Playing.value
+            self.metadata.game_phase = metadata.GamePhase.Playing.value
 
             # Create the ambience for Round 1.
             self.next_player = (current_player - 1) % 4
@@ -110,7 +114,7 @@ class GameState:
             self.valid_cards = [card.id for card in self.players[self.next_player].cards]
 
         # CARD PLAYING PHASE
-        elif state == Metadata.GamePhase.Playing.value:
+        elif state == metadata.GamePhase.Playing.value:
 
             if move == "askForTrump":
                 # ASK FOR TRUMP - Reveal trump, return trump to setter's hand, set can_ask_for_trump flag to false.
@@ -120,7 +124,7 @@ class GameState:
                 # TODO: This is a duplicate, but not sure which flag UX consumes.
 
                 trump_copy = copy.deepcopy(self.TrumpCard)
-                trump_copy.__class__ = Card.Card
+                trump_copy.__class__ = card_module.Card
                 trump_setter = self.TrumpCard.trump_setter
                 self.players[trump_setter].cards.append(trump_copy)
 
@@ -140,7 +144,7 @@ class GameState:
                                                                    self.TrumpCard.suite)
 
                     # Update Score
-                    points = Card.get_points(win_value)
+                    points = card_module.get_points(win_value)
                     winning_team = winner % 2
 
                     self.score.add_points(points, winning_team)
@@ -152,7 +156,7 @@ class GameState:
 
                     # 2a. Check for game completion and create new round if not.
                     if len(self.rounds_history) == 8:
-                        self.metadata.game_phase = Metadata.GamePhase.Over.value
+                        self.metadata.game_phase = metadata.GamePhase.Over.value
                     else:
                         self.next_player = winner
                         self.carpet = Carpet.carpet_starter(winner)

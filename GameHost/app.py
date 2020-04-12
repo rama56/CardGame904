@@ -2,16 +2,18 @@
 # Rename the folder from 'GameHost' to 'Controller'
 
 # In-project dependencies
-from DataModel.GameState import GameState
+from DataModel.game_state import GameState
 
 # External dependencies
 from flask import Flask  # import flask
 from flask import request
+import json
 from flask_cors import CORS, cross_origin
 import jsonpickle
 
 app = Flask(__name__)  # create an app instance
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 
 @app.route("/")  # at the end point /
@@ -20,7 +22,6 @@ def hello():  # call method hello
 
 
 @app.route("/newgamedummy")  # at the end point /newgamedummy
-@cross_origin()
 def create_new_game_test():
 
     game_state = GameState()
@@ -32,7 +33,6 @@ def create_new_game_test():
 
 
 @app.route("/newgame")  # at the end point /newgame
-@cross_origin()
 def create_new_game():
 
     game_state = GameState()
@@ -52,15 +52,11 @@ def restart():
     return game_state
 
 
-@app.route("/move")  # at the end point /move
-@cross_origin()
+@app.route("/move", methods=["POST"])  # at the end point /move
 def make_move():
-
-    json = request.json
-
+    state_dict = request.json
     # Use JSON pickle to convert JSON to Python object. Native json module can't handle complex classes.
-    game_state = jsonpickle.decode(json)
-
+    game_state = jsonpickle.decode(json.dumps(state_dict))
     game_state.alter_state()
 
     # Use JSON pickle to convert to JSON. Native json module can't handle complex classes.
