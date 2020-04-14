@@ -29,7 +29,7 @@ class Bid:
             return last_bidder
 
         # Bidding closes if all three other players don't raise.
-        if [bid[0] for bid in self.bidHistory[-3:]] == [-1, -1, -1]:
+        if len(self.bidHistory) > 3 and [bid[0] for bid in self.bidHistory[-3:]] == [-1, -1, -1]:
             return self.bidHistory[-4]
 
         # If the bidding is still in progress, return -1, -1.

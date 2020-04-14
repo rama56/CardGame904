@@ -7,6 +7,7 @@ class Trump(card.Card):
         self.number = None
         self.suite = None
         self.id = None
+        self.closed = True
 
         self.is_trump_set = False
         self.is_trump_revealed = False

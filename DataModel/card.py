@@ -32,6 +32,8 @@ class Card:
         self.id = (suite.value - 1) * 8 + number.value
         self.closed = False
 
+    def get_points(self):
+        return value_points_mapping[self.number]
 
 def get_deck():
     valid_cards = []
@@ -42,5 +44,4 @@ def get_deck():
     return valid_cards
 
 
-def get_points(value):
-    return value_points_mapping[value]
+

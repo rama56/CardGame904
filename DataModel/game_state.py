@@ -48,7 +48,6 @@ class GameState:
 
         self.carpet = Carpet()
         self.rounds_history = []
-
         self.move = -1  # Flimsy.
 
     def populate_test_values(self):
@@ -130,6 +129,7 @@ class GameState:
 
                 self.can_ask_for_trump = False
                 # Nothing changes with respect to the cards the player can play.
+                # WRONG ! Make the trump a valid card if the setter asked for it to be revealed.
 
             else:
                 # PLAY CARD
@@ -144,10 +144,10 @@ class GameState:
                                                                    self.TrumpCard.suite)
 
                     # Update Score
-                    points = card_module.get_points(win_value)
+                    points = self.carpet.get_points()
                     winning_team = winner % 2
 
-                    self.score.add_points(points, winning_team)
+                    self.score.add_points(winning_team, self.carpet)
                     self.score.set_winning_team()
 
                     # Update history

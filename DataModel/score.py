@@ -2,7 +2,7 @@
 
 class Score:
     def __init__(self):
-        self.TeamCarpetsWon = ([], [])
+        self.TeamCarpetsWon = {0: [], 1: []}
         self.PointsOfTeams = {0: 0, 1: 0}
 
         self.TargetPoints = -1
@@ -19,17 +19,17 @@ class Score:
         return score
 
     def set_winning_team(self):
-        if self.PointsOfTeams[self.chasingTeam] > self.TargetPoints:
+        if self.PointsOfTeams[str(self.chasingTeam)] > self.TargetPoints:
             self.winningTeam = self.chasingTeam
 
         defending_team = 1 - self.chasingTeam
 
-        if self.PointsOfTeams[defending_team] > 904 - self.TargetPoints:
+        if self.PointsOfTeams[str(defending_team)] > 904 - self.TargetPoints:
             self.winningTeam = self.chasingTeam
 
-    def add_points(self, points, winning_team, carpet):
-        self.PointsOfTeams[winning_team] = self.PointsOfTeams[winning_team] + points
-        self.TeamCarpetsWon[winning_team].append(carpet)
+    def add_points(self, winning_team, carpet):
+        self.PointsOfTeams[str(winning_team)] = self.PointsOfTeams[str(winning_team)] + carpet.get_points()
+        self.TeamCarpetsWon[str(winning_team)].append(carpet)
 
 
 # Not used
