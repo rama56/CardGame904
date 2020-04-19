@@ -21,6 +21,12 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 app.secret_key = os.urandom(16)
 
 
+def play_move(game_state):
+    game_state.set_dummy_player_belief({'key': 'value'})
+    game_state.move = 3
+    return game_state
+
+
 @app.route("/")  # at the end point /
 def hello():  # call method hello
     return "Hello World!"  # which returns "hello world"
@@ -50,12 +56,12 @@ def create_new_game():
 @app.route("/restart")  # at the end point /restart
 @cross_origin(supports_credentials=True)
 def restart():
-    game_state = GameState()
-    session['history'] = []
-    game_state.restart()
+    if 'history' in session.keys() and len(session['history']) > 0:
+        game_state = session.history[0]
+        session.history = [session.history[0]]
+        return jsonpickle.encode(game_state)
     # Use JSON pickle to convert to JSON. Native json module can't handle complex classes.
-
-    return game_state
+    return ""
 
 
 @app.route("/undo")
@@ -72,17 +78,30 @@ def undo():
     return session['history'][-1]
 
 
+@app.route("/ask-computer", methods=["POST"])
+@cross_origin(support_credentials=True)
+def play():
+    game_state = jsonpickle.decode(json.dumps(request.json))
+    new_game_state = play_move(game_state)
+    new_game_state.alter_state()
+    json_response = jsonpickle.encode(new_game_state)
+    session['history'].append(json_response)
+    session.modified = True
+    return json_response
+
+
 @app.route("/move", methods=["POST"])  # at the end point /move
 @cross_origin(supports_credentials=True)
 def make_move():
     # Use JSON pickle to convert JSON to Python object. Native json module can't handle complex classes.
     game_state = jsonpickle.decode(json.dumps(request.json))
     game_state.alter_state()
-    session['history'].append(jsonpickle.encode(game_state))
+    json_response = jsonpickle.encode(game_state)
+    session['history'].append(json_response)
     session.modified = True
 
     # Use JSON pickle to convert to JSON. Native json module can't handle complex classes.
-    json_response = jsonpickle.encode(game_state)
+
     return json_response
 
 

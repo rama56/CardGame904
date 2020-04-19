@@ -31,7 +31,7 @@ class GameState:
         # META DATA
         self.winning_team = -1
         self.metadata = Metadata()
-
+        self.dummy_player_belief = {}
         self.players = []
         self.can_ask_for_trump = False  # TODO : Okay to have it at GameState level instead of inside every player?
         self.next_player = 0
@@ -49,6 +49,9 @@ class GameState:
         self.carpet = Carpet()
         self.rounds_history = []
         self.move = -1  # Flimsy.
+
+    def set_dummy_player_belief(self, belief):
+        self.dummy_player_belief = belief
 
     def populate_test_values(self):
         self.carpet.North = self.players[0].cards[2]
