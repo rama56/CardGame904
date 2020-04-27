@@ -8,3 +8,9 @@ April 8, 2020 - Fixed the functions, created proper JSON response for 'newgame'.
 April 9, 2020 - Added some more fields to JSON with a bunch of new DataModel classes. Added dummy method 'alter_move'
 April 12, 2020 - Coded 'alter_move'. Doing a premature check-in (without testing/verifying) for Krithika
                 to look into the CORS issue.
+                
+Krithika subsequently fixed the CORS issue. She also added session state retaining capability with which
+game state history was stored. This is a vital block of the 'undo' feature implemented.
+
+April 27 - Added beliefs - Initial common prior, belief after dealing cards, granular methods on probability change
+        on observing presence or absence of a card with some player.

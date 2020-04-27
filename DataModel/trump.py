@@ -1,7 +1,7 @@
-from DataModel import card
+from DataModel.card import *
 
 
-class Trump(card.Card):
+class Trump(Card):
 
     def __init__(self):
         self.number = None
