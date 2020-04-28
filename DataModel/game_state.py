@@ -54,7 +54,6 @@ class GameState:
         self.move = -1  # Flimsy.
 
         # beliefs = [p.belief for p in self.players]
-        # self.beliefs_to_print
 
     def populate_test_values(self):
         self.carpet.North = self.players[0].cards[2]
@@ -209,8 +208,8 @@ class GameState:
 
         self.move = -1
 
-    def ask_player_engine(self):
-        player_to_play = self.next_player
-        move_suggested = self.players[player_to_play].suggest_move(self)
-
-        self.move = move_suggested
+    # def ask_player_engine(self):
+    #     player_to_play = self.next_player
+    #     move_suggested = self.players[player_to_play].suggest_move(self)
+    #
+    #     self.move = move_suggested

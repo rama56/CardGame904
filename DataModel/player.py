@@ -39,20 +39,20 @@ class Player:
         # Beliefs about distribution of cards of other hands.
         self.belief = Belief(position.value)
 
-    def suggest_move(self):
-        _valid_cards = self.game_state.valid_cards
-        _bid = self.game_state.bid
-        _metadata = self.game_state.metadata
-        _phase = _metadata.game_phase
-
-        if _phase == GamePhase.Bidding:
-            earning_capacity = self.belief.get_capacity(self.cards)
-            min_bid = _bid.minimumNextBid
-            if earning_capacity >= min_bid:
-                return earning_capacity
-
-        suggested_move = random.choice(_valid_cards)
-        return suggested_move
+    # def suggest_move(self):
+    #     _valid_cards = self.game_state.valid_cards
+    #     _bid = self.game_state.bid
+    #     _metadata = self.game_state.metadata
+    #     _phase = _metadata.game_phase
+    #
+    #     if _phase == GamePhase.Bidding:
+    #         earning_capacity = self.belief.get_capacity(self.cards)
+    #         min_bid = _bid.minimumNextBid
+    #         if earning_capacity >= min_bid:
+    #             return earning_capacity
+    #
+    #     suggested_move = random.choice(_valid_cards)
+    #     return suggested_move
 
     def rethink_belief(self, scenario):
         if scenario == "CardsDealt":
