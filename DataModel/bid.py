@@ -10,7 +10,8 @@ class Bid:
     def add_bid(self, move, current_player):
         self.bidHistory.append((move, current_player))
 
-        self.minimumNextBid = move + 1
+        if move != -1:
+            self.minimumNextBid = move + 1
 
         if len(self.bidHistory) >= 4:
             self.minimumNextBid = max(700, self.minimumNextBid)

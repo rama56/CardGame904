@@ -23,6 +23,9 @@ def deal_cards(players):
         player_number = i % player_count
         players[player_number].cards.append(deck[i])
 
+    for x in players:
+        x.rethink_belief("CardsDealt")
+
     return players  # Not needed. But, helps in placing debug point.
 
 
@@ -31,7 +34,7 @@ class GameState:
         # META DATA
         self.winning_team = -1
         self.metadata = Metadata()
-
+        self.dummy_player_belief = {}
         self.players = []
         self.can_ask_for_trump = False  # TODO : Okay to have it at GameState level instead of inside every player?
         self.next_player = 0
@@ -49,6 +52,8 @@ class GameState:
         self.carpet = Carpet()
         self.rounds_history = []
         self.move = -1  # Flimsy.
+
+        # beliefs = [p.belief for p in self.players]
 
     def populate_test_values(self):
         self.carpet.North = self.players[0].cards[2]
@@ -75,12 +80,15 @@ class GameState:
     def alter_state(self):
         move = self.move
         state = self.metadata.game_phase  # Metadata.GamePhase(self.metadata.game_phase)
-        current_player = self.next_player  # TODO : Are we doing a -1 to the index ?
+        current_player = self.next_player
 
         # BIDDING PHASE
         if state == metadata.GamePhase.Bidding.value:
             self.bid.add_bid(move, current_player)
             target, setter = self.bid.get_trump_setter_and_target()
+
+            # UPDATE BELIEFS
+            # TODO : update beliefs about nature_hands with the bidding info reflecting the strengths of the bidder.
 
             # Bidding closes
             if setter != -1:
@@ -103,6 +111,9 @@ class GameState:
             self.players[current_player].cards.remove(card_for_trump)
             self.TrumpCard = Trump.trump_from_card(card_for_trump, current_player)
 
+            # UPDATE BELIEFS
+            # TODO : update beliefs about.. ??  nature_hands with the bidding info reflecting the strengths of the bidder.
+
             # Change to Playing Phase
             self.metadata.game_phase = metadata.GamePhase.Playing.value
 
@@ -110,6 +121,7 @@ class GameState:
             self.next_player = (current_player - 1) % 4
             self.carpet = Carpet.carpet_starter(self.next_player)
             self.can_ask_for_trump = False
+            self.players[self.next_player].can_ask_for_trump = self.can_ask_for_trump
             self.valid_cards = [card.id for card in self.players[self.next_player].cards]
 
         # CARD PLAYING PHASE
@@ -122,14 +134,19 @@ class GameState:
                 self.TrumpCard.is_trump_revealed = True
                 # TODO: This is a duplicate, but not sure which flag UX consumes.
 
+                # UPDATE BELIEFS
+                # TODO : update beliefs about trump and hence anything about nature_hands subsequently about
+                #  nature_cards ?
+
                 trump_copy = copy.deepcopy(self.TrumpCard)
                 trump_copy.__class__ = card_module.Card
                 trump_setter = self.TrumpCard.trump_setter
                 self.players[trump_setter].cards.append(trump_copy)
 
                 self.can_ask_for_trump = False
+                self.players[self.next_player].can_ask_for_trump = self.can_ask_for_trump
                 # Nothing changes with respect to the cards the player can play.
-                # WRONG ! Make the trump a valid card if the setter asked for it to be revealed.
+                # TODO: WRONG ! Make the trump a valid card if the setter asked for it to be revealed.
 
             else:
                 # PLAY CARD
@@ -137,6 +154,17 @@ class GameState:
                 card_to_play = [card for card in self.players[current_player].cards if card.id == move][0]
                 self.carpet.add_card(current_player, card_to_play)
                 self.players[current_player].cards.remove(card_to_play)
+
+                # UPDATE BELIEFS
+                # TODO : update beliefs nature_cards and subsequently about nature_hands.
+                #  Looks like only truth is used to update beliefs. Try some rationality assumptions.
+                card_played = card_module.get_card_from_id(move)
+                for p in self.players:
+                    p.belief.has_card(current_player, card_played)
+
+                if card_played.suite != self.carpet.suite:
+                    for p in self.players:
+                        p.belief.not_has_suite(current_player, self.carpet.suite)
 
                 # 2. Check for round completion
                 if self.carpet.is_round_over():
@@ -161,6 +189,7 @@ class GameState:
                         self.next_player = winner
                         self.carpet = Carpet.carpet_starter(winner)
                         self.can_ask_for_trump = False
+                        self.players[self.next_player].can_ask_for_trump = self.can_ask_for_trump
                         self.valid_cards = [card.id for card in self.players[winner].cards]
 
                 else:
@@ -173,7 +202,14 @@ class GameState:
                     if len(self.valid_cards) == 0:
                         # Can ask for trump if it's not revealed.
                         self.can_ask_for_trump = not self.TrumpCard.is_trump_revealed
+                        self.players[self.next_player].can_ask_for_trump = self.can_ask_for_trump
                         # Can play any card
                         self.valid_cards = [card.id for card in self.players[self.next_player].cards]
 
         self.move = -1
+
+    # def ask_player_engine(self):
+    #     player_to_play = self.next_player
+    #     move_suggested = self.players[player_to_play].suggest_move(self)
+    #
+    #     self.move = move_suggested
