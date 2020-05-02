@@ -21,4 +21,5 @@ April 28 - The CORS issue seems to resurface. Unable to root-cause. Also, there 
             There's a known issue where when there are more than 1 clients playing the game, history/belief shall get
             mixed up.
             
-May 2 - Evolution of beliefs is solidified. Works well for significant cards.
+May 2 - Evolution of beliefs is solidified. Works well for significant cards. 
+        Create separate branch for trying out Pandas Dataframes.
