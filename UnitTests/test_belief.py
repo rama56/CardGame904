@@ -18,22 +18,6 @@ class Test(TestCase):
 
         assert 0.99 < total < 1.01
 
-    def test_interim_prob(self):
-        initial_belief = belief.Belief(2)
-
-        cards = [Card(Number.Jack, Suite.Spade), Card(Number.Two, Suite.Hearts),
-                 Card(Number.Three, Suite.Hearts), Card(Number.Ace, Suite.Hearts),
-                 Card(Number.Jack, Suite.Hearts),
-                 Card(Number.Queen, Suite.Dice), Card(Number.Nine, Suite.Clover)]
-
-        # cards = [x.eng for x in cards]
-        initial_belief.my_cards(cards)
-
-        interim_prob = initial_belief.private_interim
-        vals = interim_prob.values()
-        total = sum(vals)
-        assert 0.99 < total < 1.01
-
     def test_my_cards_2(self):
         # initial_belief = belief.Belief(2)
 
@@ -42,16 +26,8 @@ class Test(TestCase):
                  Card(Number.Jack, Suite.Hearts),
                  Card(Number.Queen, Suite.Dice), Card(Number.Nine, Suite.Clover)]
 
-        # cards = [x.eng for x in cards]
-        # initial_belief.my_cards(cards)
-
-        # interim_prob = initial_belief.private_interim
-        # vals = interim_prob.values()
-        # total = sum(vals)
-        # assert 0.99 < total < 1.01
-
         initial_belief_2 = belief.Belief(2)
-        initial_belief_2.my_cards_2(cards)
+        initial_belief_2.my_hand_cards(cards)
 
         nature_1 = initial_belief_2.nature_hands[1]
         nature_2 = initial_belief_2.nature_hands[2]

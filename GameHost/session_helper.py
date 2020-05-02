@@ -29,12 +29,21 @@ def save_belief(game_state):
         # end for
     # end for
 
-    return belief_json
+    ck = game_state.common_knowledge
+    ck_json = jsonpickle.encode(ck)
+
+    game_state.common_knowledge = None
+
+    return belief_json, ck_json
 # end function
 
 
-def reattach_belief(game_state, beliefs_json):
+def reattach_belief(game_state, beliefs_json, ck_json):
     beliefs = jsonpickle.decode(beliefs_json)
     for i in range(4):
         p = game_state.players[i]
         p.belief = beliefs[i]
+
+    ck = jsonpickle.decode(ck_json)
+    game_state.common_knowledge = ck
+
