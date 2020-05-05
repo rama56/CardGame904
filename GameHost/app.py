@@ -38,10 +38,11 @@ def create_new_game_test():
 @app.route("/newgame")  # at the end point /newgame
 def create_new_game():
     reset_history()
+    reset_beliefs()
     game_state = GameState()
     # Trim beliefs, save original.
-    beliefs_json = session_helper.save_belief(game_state)
-    add_to_beliefs(beliefs_json)
+    beliefs_json, ck_json = session_helper.save_belief(game_state)
+    add_to_beliefs(beliefs_json, ck_json)
 
     # Use JSON pickle to convert to JSON. Native json module can't handle complex classes.
     json_response = jsonpickle.encode(game_state)
@@ -52,7 +53,7 @@ def create_new_game():
 @app.route("/restart")  # at the end point /restart
 def restart():
     history = get_history()
-    beliefs = get_beliefs()
+    beliefs, cks = get_beliefs()
     if history:
         game_state = history[0]
         reset_history()
@@ -60,7 +61,7 @@ def restart():
     else:
         game_state = GameState()
     reset_beliefs()
-    add_to_beliefs(beliefs[0])
+    add_to_beliefs(beliefs[0], cks[0])
     return jsonpickle.encode(game_state)
 
 
@@ -108,17 +109,15 @@ def make_move():
     game_state = jsonpickle.decode(json.dumps(request.json))
 
     # Re-attach beliefs from session.
-    beliefs = get_beliefs()
-    if beliefs:
-        beliefs_json = beliefs[-1]
-        session_helper.reattach_belief(game_state, beliefs_json)
+    last_belief, last_ck = pop_beliefs()
+    if last_belief:
+        session_helper.reattach_belief(game_state, last_belief, last_ck)
 
     game_state.alter_state()
 
-    if beliefs:
-        # Trim beliefs, save original to session.
-        beliefs_json = session_helper.save_belief(game_state)
-        add_to_beliefs(beliefs_json)
+    # Trim beliefs, save original to session.
+    belief_json, ck_json = session_helper.save_belief(game_state)
+    add_to_beliefs(belief_json, ck_json)
 
     # Use JSON pickle to convert to JSON. Native json module can't handle complex classes.
     json_response = jsonpickle.encode(game_state)

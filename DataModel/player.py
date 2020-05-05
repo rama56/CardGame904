@@ -54,9 +54,9 @@ class Player:
     #     suggested_move = random.choice(_valid_cards)
     #     return suggested_move
 
-    def rethink_belief(self, scenario):
+    def rethink_belief(self, scenario, common_knowledge):
         if scenario == "CardsDealt":
-            self.belief.my_cards_2(self.cards)
+            self.belief.my_hand_cards(self.cards, common_knowledge)
         elif scenario == "CardPlayed":
             a = 5
             # something

@@ -10,6 +10,7 @@ from DataModel.bid import Bid
 from DataModel.metadata import Metadata
 from DataModel.score import Score
 from DataModel.carpet import Carpet
+from Intelligence.common_knowledge import CommonKnowledge
 
 
 def deal_cards(players):
@@ -23,18 +24,14 @@ def deal_cards(players):
         player_number = i % player_count
         players[player_number].cards.append(deck[i])
 
-    for x in players:
-        x.rethink_belief("CardsDealt")
-
     return players  # Not needed. But, helps in placing debug point.
 
 
 class GameState:
-    def __init__(self):
+    def __init__(self, card_hands=None):
         # META DATA
         self.winning_team = -1
         self.metadata = Metadata()
-        self.dummy_player_belief = {}
         self.players = []
         self.can_ask_for_trump = False  # TODO : Okay to have it at GameState level instead of inside every player?
         self.next_player = 0
@@ -44,38 +41,50 @@ class GameState:
         self.score = Score()
         self.TrumpCard = Trump()
 
+        # COMMON KNOWLEDGE
+        self.common_knowledge = CommonKnowledge()
+
         self.players = player.create_players(self.metadata.playerCount)
 
-        deal_cards(self.players)
+        if card_hands is None:
+            deal_cards(self.players)
+        else:
+            for i in range(4):
+                self.players[i].cards = [card_module.get_card_from_id(x) for x in card_hands[i]]
+
+        self.common_knowledge.set_common_prior()
+
+        # CALCULATE BELIEF BASED ON CARDS RECEIVED.
+        for x in self.players:
+            x.rethink_belief("CardsDealt", self.common_knowledge)
+
         self.valid_cards = [card.id for card in self.players[self.next_player].cards]
 
         self.carpet = Carpet()
         self.rounds_history = []
         self.move = -1  # Flimsy.
 
-        # beliefs = [p.belief for p in self.players]
-
-    def populate_test_values(self):
-        self.carpet.North = self.players[0].cards[2]
-        self.carpet.East = self.players[1].cards[3]
-        self.carpet.South = self.players[2].cards[5]
-
-        trump = self.players[0].cards[4]
-        self.TrumpCard = trump()
-
-        self.TrumpCard.suite = trump.suite
-        self.TrumpCard.number = trump.number
-        self.TrumpCard.id = trump.id
-
-        self.TrumpCard.is_trump_revealed = False
-        self.TrumpCard.is_trump_set = True
-        self.TrumpCard.trump_setter = 2
-        self.TrumpCard.closed = True
-
-        self.score.chasingTeam = "N&S"
-        self.score.TargetPoints = 600
-        self.score.HorizontalPoints = 360
-        self.score.VerticalTeamPoints = 93
+    # def populate_test_values(self):
+    #     self.carpet.North = self.players[0].cards[2]
+    #     self.carpet.East = self.players[1].cards[3]
+    #     self.carpet.South = self.players[2].cards[5]
+    #
+    #     trump = self.players[0].cards[4]
+    #     self.TrumpCard = trump()
+    #
+    #     self.TrumpCard.suite = trump.suite
+    #     self.TrumpCard.number = trump.number
+    #     self.TrumpCard.id = trump.id
+    #
+    #     self.TrumpCard.is_trump_revealed = False
+    #     self.TrumpCard.is_trump_set = True
+    #     self.TrumpCard.trump_setter = 2
+    #     self.TrumpCard.closed = True
+    #
+    #     self.score.chasingTeam = "N&S"
+    #     self.score.TargetPoints = 600
+    #     self.score.HorizontalPoints = 360
+    #     self.score.VerticalTeamPoints = 93
 
     def alter_state(self):
         move = self.move
@@ -84,6 +93,8 @@ class GameState:
 
         # BIDDING PHASE
         if state == metadata.GamePhase.Bidding.value:
+            if (self.move < self.bid.minimumNextBid or self.move > self.bid.maximumBid) and self.move != -1:
+                raise Exception("Invalid trump selection " + str(self.move) + " " + str(self.valid_cards))
             self.bid.add_bid(move, current_player)
             target, setter = self.bid.get_trump_setter_and_target()
 
@@ -105,6 +116,8 @@ class GameState:
 
         # TRUMP SELECTION STEP
         elif state == metadata.GamePhase.TrumpSelection.value:
+            if self.move not in self.valid_cards:
+                raise Exception("Invalid trump selection " + str(self.move) + " " + str(self.valid_cards))
 
             # Assign trump card and remove from the player's hand.
             card_for_trump = [card for card in self.players[current_player].cards if card.id == move][0]
@@ -112,7 +125,8 @@ class GameState:
             self.TrumpCard = Trump.trump_from_card(card_for_trump, current_player)
 
             # UPDATE BELIEFS
-            # TODO : update beliefs about.. ??  nature_hands with the bidding info reflecting the strengths of the bidder.
+            # TODO : update beliefs about.. ??  nature_hands with the bidding info reflecting
+            #  the strengths of the bidder.
 
             # Change to Playing Phase
             self.metadata.game_phase = metadata.GamePhase.Playing.value
@@ -129,6 +143,9 @@ class GameState:
 
             if move == "askForTrump":
                 # ASK FOR TRUMP - Reveal trump, return trump to setter's hand, set can_ask_for_trump flag to false.
+
+                if not self.can_ask_for_trump:
+                    raise Exception("can ask for trump is false")
 
                 self.TrumpCard.closed = False
                 self.TrumpCard.is_trump_revealed = True
@@ -149,6 +166,9 @@ class GameState:
                 # TODO: WRONG ! Make the trump a valid card if the setter asked for it to be revealed.
 
             else:
+                if self.move not in self.valid_cards:
+                    raise Exception("Invalid card " + str(self.move) + " " + str(self.valid_cards))
+
                 # PLAY CARD
                 # 1. Add card to the carpet and remove from player's hand.
                 card_to_play = [card for card in self.players[current_player].cards if card.id == move][0]
@@ -160,7 +180,7 @@ class GameState:
                 #  Looks like only truth is used to update beliefs. Try some rationality assumptions.
                 card_played = card_module.get_card_from_id(move)
                 for p in self.players:
-                    p.belief.has_card(current_player, card_played)
+                    p.belief.has_card(card_played.eng, current_player)
 
                 if card_played.suite != self.carpet.suite:
                     for p in self.players:
