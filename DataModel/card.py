@@ -4,6 +4,11 @@ import math
 
 value_points_mapping = {1: 2, 2: 3, 3: 10, 4: 11, 5: 20, 6: 30, 7: 50, 8: 100}
 
+eng_id_mapping = {'QueenSpade': 1, 'KingSpade': 2, 'TenSpade': 3, 'AceSpade': 4, 'NineSpade': 5, 'JackSpade': 6, 'ThreeSpade': 7,  'TwoSpade': 8,
+                  'QueenHearts': 9, 'KingHearts': 10, 'TenHearts': 11, 'AceHearts': 12, 'NineHearts': 13, 'JackHearts': 14, 'ThreeHearts': 15,  'TwoHearts': 16,
+                  'QueenDice': 17, 'KingDice': 18, 'TenDice': 19, 'AceDice': 20, 'NineDice': 21, 'JackDice': 22, 'ThreeDice': 23,  'TwoDice': 24,
+                  'QueenClover': 25, 'KingClover': 26, 'TenClover': 27, 'AceClover': 28, 'NineClover': 29, 'JackClover': 30, 'ThreeClover': 31,  'TwoClover': 32}
+
 
 # creating enumerations using class
 class Number(enum.IntEnum):
@@ -43,11 +48,22 @@ class Card:
         return self.number >= Number.Nine
 
 
+def get_card_from_eng(eng):
+    _id = eng_id_mapping[eng]
+    return get_card_from_id(_id)
+
+
+def is_sig_card_eng(c_str):
+    c = get_card_from_eng(c_str)
+    return c.is_significant_card()
+
+
 # TODO: Make this an overloaded constructor.
 def get_card_from_id(card_id):
-    number = card_id % 8
+    card_id = card_id - 1
+    number = (card_id % 8) + 1
     suite = math.floor(card_id/8)
-    card = Card(number, suite)
+    card = Card(Number(number), Suite(suite))
     return card
 
 
@@ -72,6 +88,13 @@ def get_remaining_significant_cards(cards_engs):
     remaining_sig_cards = [card.eng for card in sig_cards if card.eng not in cards_engs]
 
     return remaining_sig_cards
+
+
+def get_remaining_cards_engs(cards_engs):
+    full_deck = get_deck()
+    remaining_cards = [card.eng for card in full_deck if card.eng not in cards_engs]
+
+    return remaining_cards
 
 
 def get_remaining_cards(cards):

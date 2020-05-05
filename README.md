@@ -14,3 +14,11 @@ game state history was stored. This is a vital block of the 'undo' feature imple
 
 April 27 - Added beliefs - Initial common prior, belief after dealing cards, granular methods on probability change
         on observing presence or absence of a card with some player.
+
+April 28 - The CORS issue seems to resurface. Unable to root-cause. Also, there is another issue of response header
+            being too large in the browser when belief increases.
+            Thus, idea of having session variables is dropped, and worked around by usage of global variables.
+            There's a known issue where when there are more than 1 clients playing the game, history/belief shall get
+            mixed up.
+            
+May 2 - Evolution of beliefs is solidified. Works well for significant cards.

@@ -1,35 +1,41 @@
 history = []
 beliefs = []
+cks = []
 
 
-def add_to_beliefs(element):
-    global beliefs
+def add_to_beliefs(belief, ck):
+    global beliefs, cks
     if beliefs:
-        beliefs.append(element)
+        beliefs.append(belief)
+        cks.append(ck)
     else:
-        beliefs = [element]
+        beliefs = [belief]
+        cks = [ck]
 
 
 def get_beliefs():
-    global beliefs
+    global beliefs, cks
     if beliefs:
-        return beliefs
+        return beliefs, cks
     else:
-        return None
+        return None, None
 
 
 def reset_beliefs():
-    global beliefs
+    global beliefs, cks
     beliefs = None
+    cks = None
 
 
 def pop_beliefs():
-    global beliefs
+    global beliefs, cks
     if beliefs:
-        last_element = beliefs[-1]
+        last_bel = beliefs[-1]
+        last_ck = cks[-1]
         beliefs = beliefs[:-1]
-        return last_element
-    return None
+        cks = cks[:-1]
+        return last_bel, last_ck
+    return None, None
 
 
 def add_to_history(element):
