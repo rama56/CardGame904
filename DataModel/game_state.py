@@ -56,7 +56,7 @@ class GameState:
 
         # CALCULATE BELIEF BASED ON CARDS RECEIVED.
         for x in self.players:
-            x.rethink_belief("CardsDealt", self.common_knowledge)
+            x.rethink_belief(self, "CardsDealt", move=None, move_by=None)
 
         self.valid_cards = [card.id for card in self.players[self.next_player].cards]
 
@@ -95,14 +95,22 @@ class GameState:
         if state == metadata.GamePhase.Bidding.value:
             if (self.move < self.bid.minimumNextBid or self.move > self.bid.maximumBid) and self.move != -1:
                 raise Exception("Invalid trump selection " + str(self.move) + " " + str(self.valid_cards))
+
+            # STORE BID RANGE IN BELIEFS
+            # TODO : Explore possibility of updating belief after every bid instead of doing it at the end.
+            for p in self.players:
+                p.rethink_belief(self, "BidPlaced", move=move, move_by=current_player)
+
             self.bid.add_bid(move, current_player)
             target, setter = self.bid.get_trump_setter_and_target()
 
-            # UPDATE BELIEFS
-            # TODO : update beliefs about nature_hands with the bidding info reflecting the strengths of the bidder.
-
             # Bidding closes
             if setter != -1:
+
+                # UPDATE BELIEFS
+                for p in self.players:
+                    p.rethink_belief(self, "BiddingOver", move=None, move_by=None)
+
                 # Assign the score values.
                 self.score = Score.initial_score(target, setter % 2)  # str(setter) + " and " + str((setter + 2) % 4)
 
@@ -123,10 +131,6 @@ class GameState:
             card_for_trump = [card for card in self.players[current_player].cards if card.id == move][0]
             self.players[current_player].cards.remove(card_for_trump)
             self.TrumpCard = Trump.trump_from_card(card_for_trump, current_player)
-
-            # UPDATE BELIEFS
-            # TODO : update beliefs about.. ??  nature_hands with the bidding info reflecting
-            #  the strengths of the bidder.
 
             # Change to Playing Phase
             self.metadata.game_phase = metadata.GamePhase.Playing.value
@@ -152,8 +156,10 @@ class GameState:
                 # TODO: This is a duplicate, but not sure which flag UX consumes.
 
                 # UPDATE BELIEFS
-                # TODO : update beliefs about trump and hence anything about nature_hands subsequently about
-                #  nature_cards ?
+                for p in self.players:
+                    p.rethink_belief(self, "TrumpRevealed", move=self.TrumpCard, move_by=self.TrumpCard.trump_setter)
+
+                # TODO: Badly need to update common knowledge here. It's the crux. :(
 
                 trump_copy = copy.deepcopy(self.TrumpCard)
                 trump_copy.__class__ = card_module.Card
@@ -162,9 +168,9 @@ class GameState:
 
                 self.can_ask_for_trump = False
                 self.players[self.next_player].can_ask_for_trump = self.can_ask_for_trump
-                # Nothing changes with respect to the cards the player can play.
-                # TODO: WRONG ! Make the trump a valid card if the setter asked for it to be revealed.
 
+                if trump_setter == self.next_player:
+                    self.valid_cards.append(self.TrumpCard.id)
             else:
                 if self.move not in self.valid_cards:
                     raise Exception("Invalid card " + str(self.move) + " " + str(self.valid_cards))
@@ -176,15 +182,15 @@ class GameState:
                 self.players[current_player].cards.remove(card_to_play)
 
                 # UPDATE BELIEFS
-                # TODO : update beliefs nature_cards and subsequently about nature_hands.
-                #  Looks like only truth is used to update beliefs. Try some rationality assumptions.
                 card_played = card_module.get_card_from_id(move)
-                for p in self.players:
-                    p.belief.has_card(card_played.eng, current_player)
 
+                # Update common knowledge
+                self.common_knowledge.has_card(card_played.eng, current_player)
                 if card_played.suite != self.carpet.suite:
-                    for p in self.players:
-                        p.belief.not_has_suite(current_player, self.carpet.suite)
+                    self.common_knowledge.not_has_suite(current_player, self.carpet.suite)
+
+                for p in self.players:
+                    p.rethink_belief(self, "CardPlayed", move=card_played, move_by=current_player)
 
                 # 2. Check for round completion
                 if self.carpet.is_round_over():
@@ -194,7 +200,6 @@ class GameState:
                     # Update Score
                     points = self.carpet.get_points()
                     winning_team = winner % 2
-
                     self.score.add_points(winning_team, self.carpet)
                     self.score.set_winning_team()
 

@@ -1,6 +1,7 @@
 # importing enum for enumerations
 import enum
 import math
+import random
 
 value_points_mapping = {1: 2, 2: 3, 3: 10, 4: 11, 5: 20, 6: 30, 7: 50, 8: 100}
 
@@ -9,6 +10,10 @@ eng_id_mapping = {'QueenSpade': 1, 'KingSpade': 2, 'TenSpade': 3, 'AceSpade': 4,
                   'QueenDice': 17, 'KingDice': 18, 'TenDice': 19, 'AceDice': 20, 'NineDice': 21, 'JackDice': 22, 'ThreeDice': 23,  'TwoDice': 24,
                   'QueenClover': 25, 'KingClover': 26, 'TenClover': 27, 'AceClover': 28, 'NineClover': 29, 'JackClover': 30, 'ThreeClover': 31,  'TwoClover': 32}
 
+id_eng_mapping = {1: 'QueenSpade', 2: 'KingSpade', 3: 'TenSpade', 4: 'AceSpade', 5: 'NineSpade', 6: 'JackSpade', 7: 'ThreeSpade',  8: 'TwoSpade',
+                  9: 'QueenHearts', 10: 'KingHearts', 11: 'TenHearts', 12: 'AceHearts', 13: 'NineHearts', 14: 'JackHearts', 15: 'ThreeHearts',  16: 'TwoHearts',
+                  17: 'QueenDice', 18: 'KingDice', 19: 'TenDice', 20: 'AceDice', 21: 'NineDice', 22: 'JackDice', 23: 'ThreeDice', 24: 'TwoDice',
+                  25: 'QueenClover', 26: 'KingClover', 27: 'TenClover', 28: 'AceClover', 29: 'NineClover', 30: 'JackClover', 31: 'ThreeClover',  32: 'TwoClover'}
 
 # creating enumerations using class
 class Number(enum.IntEnum):
@@ -39,6 +44,7 @@ class Card:
         self.closed = False
 
         self.eng = self.number.name + self.suite.name
+        self.points = self.get_points()
 
     def get_points(self):
         return value_points_mapping[self.number]
@@ -74,6 +80,12 @@ def get_deck():
             card = Card(number, suit)
             valid_cards.append(card)
     return valid_cards
+
+
+def get_shuffled_deck():
+    deck = get_deck()
+    random.shuffle(deck)
+    return deck
 
 
 def get_significant_cards():

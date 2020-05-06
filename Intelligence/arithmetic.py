@@ -1,11 +1,17 @@
 from mpmath import mp
 import math
 
+
 mp.dps = 20
 
 
 def choose(n, k):
-    return math.factorial(n)/ (math.factorial(n-k) * math.factorial(k))
+    return math.factorial(n) / (math.factorial(n-k) * math.factorial(k))
+
+
+def choose_prob(n, k):
+    ways_to_choose = choose(n, k)
+    return 1 / ways_to_choose
 
 
 def probability_prior(card_count):
@@ -59,3 +65,5 @@ def probability_prior_blasphemous(card_count):
 def calc_posterior(p_likelihood, p_evidence, p_prior):
     # TODO : Check p_evidence for 0
     return (p_likelihood * p_prior) / p_evidence
+
+
