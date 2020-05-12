@@ -26,6 +26,9 @@ May 2 - Evolution of beliefs is solidified. Works well for significant cards.
         
 May 6 - Dataframes is good. Some parallelization is possible. No more signifincant-cards stuff. All 24C8 combinations.        
 
+May 12 - To get pip dependencies into requirements.txt venv/bin/python3.7 -m pip freeze --local > requirements.txt
+Install webserver GUnicorn with  venv/bin/python3.7 -m pip install gunicorn
+
 TODO - immediate future :
 1. Check None CardSet exception.    FIXED
 2. Optimize the card removal, card id checker from CardSet in card_prob_change()
