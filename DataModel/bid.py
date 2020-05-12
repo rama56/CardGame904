@@ -11,7 +11,8 @@ class Bid:
         self.bidHistory.append((move, current_player))
 
         if move != -1:
-            self.minimumNextBid = move + 1
+            self.minimumNextBid = ((move // 10) * 10) + 10
+            self.minimumNextBid = min(904, self.minimumNextBid)
 
         if len(self.bidHistory) >= 4:
             self.minimumNextBid = max(700, self.minimumNextBid)
