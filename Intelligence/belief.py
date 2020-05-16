@@ -1,4 +1,3 @@
-import copy
 
 from DataModel.card import *
 from GameHost.perf import parallelize_dataframe
@@ -6,11 +5,14 @@ from Intelligence import arithmetic
 from DataModel import ux_printable
 from Intelligence import common_knowledge
 from Intelligence import belief_helper
+from GameHost import session_helper
 
-
+import copy
 import pandas as pd
 import numpy as np
 import swifter
+from timeit import default_timer as timer
+import logging
 
 import ast
 
@@ -57,12 +59,16 @@ class Belief:
         _all_card_sets = []
         # common_knowledge.fill_prior_hands([], self._all_cards_still_out, 0, _all_card_sets)
 
-        common_knowledge.fill_prior_hands_simple([], _all_cards_out_ids, 0, _all_card_sets)
+        # common_knowledge.fill_prior_hands_simple([], _all_cards_out_ids, 0, _all_card_sets)
+        # individual_prior = pd.DataFrame(_all_card_sets, columns=['CardSet'])
+        # individual_prior.astype(str)
+        # individual_prior_store = session_helper.join_for_belief_scores(individual_prior)
 
-        individual_prior = pd.DataFrame(_all_card_sets, columns=['CardSet'])
+        _card_ids_in_hand_mask = arithmetic.get_mask(_card_ids_in_hand)
+        individual_prior_store = session_helper.filter_cardsets_out(_card_ids_in_hand_mask)
 
-        prob = arithmetic.choose_prob(24, 8)
-        individual_prior['Probability'] = prob
+        # prob = arithmetic.choose_prob(24, 8)
+        # individual_prior_store['Probability'] = prob
 
         # individual_prior['Strength'] = individual_prior['CardSet'].swifter.apply(
         #     get_strength_from_cardset_string)  # takes 2.4 minutes.
@@ -72,7 +78,7 @@ class Belief:
 
         # individual_prior_store = belief_helper.fill_strength_and_trump_choice(individual_prior)
         # trying out parallel execution.
-        individual_prior_store = parallelize_dataframe(individual_prior, belief_helper.fill_strength_and_trump_choice)
+        # ----- individual_prior_store = parallelize_dataframe(individual_prior, belief_helper.fill_strength_and_trump_choice)
 
         # top_20 = individual_prior.nlargest(20, 'Strength', keep='all')
         # last_20 = individual_prior.nsmallest(20, 'Strength', keep='all')
@@ -81,9 +87,13 @@ class Belief:
             if i == self.player_id:
                 _self_card_set = [str([x.id for x in cards_in_hand])]
                 self_prior = pd.DataFrame(_self_card_set, columns=['CardSet'])
+
+                strength, trump_card = get_strength(cards_in_hand)
+                self_prior['Strength'] = strength
+                self_prior['TrumpCandidate'] = trump_card.suite.value
+                self_prior['Mask'] = arithmetic.get_mask(_card_ids_in_hand)
                 self_prior['Probability'] = 1
-                self_prior['Strength'] = -1
-                self_prior['TrumpCandidate'] = -1
+                self_prior = self_prior.set_index('CardSet')
                 self.nature_hands[i] = self_prior
             else:
                 prior_copy = copy.deepcopy(individual_prior_store)
@@ -200,6 +210,12 @@ class Belief:
 
     # Observation - 'posseser' does not have 'card'
     def not_has_card(self, card_id, posseser_id, situation=None):
+
+        if self.player_id == posseser_id and situation != "CardsDealt":
+            # If this is not the cards dealing phase, then nothing is to be changed in belief
+            # about his own card absence.
+            return
+
         card_eng = id_eng_mapping[card_id]
 
         p_current = self.nature_cards[card_eng][posseser_id]
@@ -209,10 +225,7 @@ class Belief:
         rp_new = 1 - p_new
 
         for i in range(4):
-            if self.player_id == posseser_id and situation != "CardsDealt":
-                # If this is not the cards dealing phase, then nothing is to be changed in belief
-                # about his own card absence.
-                continue
+
             if i == self.player_id and situation != "CardsDealt":
                 # If this is not the cards dealing phase, then nothing is to be done about belief of oneself's cards.
                 continue
@@ -265,12 +278,19 @@ class Belief:
 
         # Update belief card_set_distribution's CardSet based on the 'Knowledge' gained.
 
-        none_rows = card_set_distribution[card_set_distribution['CardSet'].isnull()]
+        # none_rows = card_set_distribution[card_set_distribution['CardSet'].isnull()]
+        none_rows = card_set_distribution[card_set_distribution.index.isnull()]
 
         if none_rows.shape[0] > 0:
             a = 5
 
-        has_card_id = belief_helper.get_has_card_id_flag(card_set_distribution, card_id)
+        start = timer()
+        has_card_id = belief_helper.get_has_card_id_flag(card_set_distribution, card_id)    # parallelize_dataframe(card_set_distribution, belief_helper.get_has_card_id_flag, param=card_id)
+        end = timer()
+        elapsed = end - start
+        logging.info('get_has_card_id_flag completed. Time elapsed = ' + str(elapsed))
+
+        # has_card_id = belief_helper.get_has_card_id_flag(card_set_distribution, card_id)
 
         # Now, I don't know Bayes theorem for this. As we don't observe a clear evidence.
         # It's just a change in probability of the card (evidence)
@@ -304,19 +324,13 @@ class Belief:
         non_zero_rows_flag = card_set_distribution['Probability'] != 0
         non_zero_rows = card_set_distribution[non_zero_rows_flag]
 
-        if p_new == 1:
-            # Remove the know card from the 'Cardset'
-            cardset_strings = non_zero_rows['CardSet']
-            cardset_strings = belief_helper.get_card_id_removed_from_cardset(cardset_strings, card_id)
-
-            non_zero_rows.loc[:, 'CardSet'] = cardset_strings
 
         self.nature_hands[player_i] = non_zero_rows
 
     def trump_revealed(self, _trump_setter, _card_played_id):
         distribution = self.nature_hands[_trump_setter]
 
-        _suite = (_card_played_id - 1) // 4
+        _suite = (_card_played_id - 1) // 8
 
         trump_flag = distribution['TrumpCandidate'] == _suite
 
@@ -382,6 +396,7 @@ def get_strength(cards, f=None):
             # trump_suite = b[0].suite
             card_number = len(b) - 1
             trump_card = b[card_number]
+            max_val = suit_strength
 
     value = (strength // 10) * 10
     value = min(904, value)

@@ -230,11 +230,14 @@ class GameState:
                         self.players[self.next_player].can_ask_for_trump = self.can_ask_for_trump
                         # Can play any card
                         self.valid_cards = [card.id for card in self.players[self.next_player].cards]
+                    else:
+                        self.can_ask_for_trump = False
+
 
         self.move = -1
 
-    # def ask_player_engine(self):
-    #     player_to_play = self.next_player
-    #     move_suggested = self.players[player_to_play].suggest_move(self)
-    #
-    #     self.move = move_suggested
+    def ask_player_engine(self):
+        player_to_play = self.next_player
+        move_suggested = self.players[player_to_play].suggest_move(self)
+
+        self.move = move_suggested

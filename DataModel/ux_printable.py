@@ -18,17 +18,22 @@ class UxBelief:
             b = nature_hands[i]
             # Get top 20 card_sets
             n = 20
-            n = min(n, b.shape[0])                                  # n = min(n, len(b))
-                                                                    # n largest values in dictionary
-            top20 = b.nlargest(n, 'Probability')                                                        # Using sorted() + itemgetter() + items()
-            top20_list = top20.values.tolist()                                                    # top20 = dict(sorted(b.items(), key=itemgetter(1), reverse=True)[:n])
+            n = min(n, b.shape[0])
 
-            for i in range(len(top20_list)):
-                list_id_str = top20_list[i][0]
+            top20 = b.nlargest(n, 'Probability').copy(deep=True)
+            top20_reset = top20.reset_index()
+            col_order = ['CardSet', 'Probability', 'Strength', 'TrumpCandidate']
+            top20_reset_reordered = top20_reset[col_order]
+
+            top20_list = top20_reset_reordered.values.tolist()
+
+            for j in range(len(top20_list)):
+                list_id_str = top20_list[j][0]
                 list_id = ast.literal_eval(list_id_str)
                 list_eng = [card.id_eng_mapping[x] for x in list_id]
-                list_eng_str = str(list_eng)
-                top20_list[i][0] = list_eng_str
+                trimmed_list_eng = [x for x in list_eng if x not in self.surely_has[i]]
+                list_eng_str = str(trimmed_list_eng)
+                top20_list[j][0] = list_eng_str
 
             self.nature_hands.append(top20_list)
 
