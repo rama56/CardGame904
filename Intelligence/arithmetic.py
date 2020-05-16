@@ -67,3 +67,9 @@ def calc_posterior(p_likelihood, p_evidence, p_prior):
     return (p_likelihood * p_prior) / p_evidence
 
 
+def get_mask(_card_ids_in_hand):
+    mask = 0
+    for i in _card_ids_in_hand:
+        mask = mask + 2 ** i
+
+    return mask

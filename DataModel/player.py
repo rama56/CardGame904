@@ -44,31 +44,31 @@ class Player:
         # Beliefs about distribution of cards of other hands.
         self.belief = Belief(position.value)
 
-    def suggest_move(self, game_state):
-        _game_state = GameState()    # weakref.ref(game_state)
+    def suggest_move(self, _game_state):
+        # _game_state = weakref.ref(game_state)
         _valid_cards = _game_state.valid_cards
         _bid = _game_state.bid
         _metadata = _game_state.metadata
         _phase = _metadata.game_phase
 
-        if _phase == GamePhase.Bidding:
+        if _phase == GamePhase.Bidding.value:
             self.earning_capacity, self.trump_choice_card = belief.get_strength(self.cards)
             if self.earning_capacity >= _bid.minimumNextBid:
                 return self.earning_capacity
             else:
                 return -1
 
-        elif _phase == GamePhase.TrumpSelection:
+        elif _phase == GamePhase.TrumpSelection.value:
             _trump_card_id = self.trump_choice_card.id
             assert _trump_card_id in _valid_cards
             return _trump_card_id
 
-        elif _phase == GamePhase.Playing:
+        elif _phase == GamePhase.Playing.value:
             # TODO: Think and do something.
             suggested_move = random.choice(_valid_cards)
             return suggested_move
 
-        elif _phase == GamePhase.Over:
+        elif _phase == GamePhase.Over.value:
             a = 5
             # Throw exception??
         # end if else clauses

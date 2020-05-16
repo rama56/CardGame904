@@ -17,17 +17,16 @@ def fill_strength_and_trump_choice(individual_prior):
     individual_prior['DicePoints'] = individual_prior['DiceIds'].apply(get_points)
     individual_prior['CloverPoints'] = individual_prior['CloverIds'].apply(get_points)
 
+    booster_coefficients = [-1, 3, 2.5, 1.8, 1.5, 1.5, 1.5, 1.2]
+
     individual_prior['SpadeStrengthSum'] = individual_prior['SpadePoints'].apply(get_strength_sum,
-                                                                                 f=[-1, 3, 2.5, 1.8, 1.5, 1.5, 1.5,
-                                                                                    1.2])
+                                                                                 f=booster_coefficients)
     individual_prior['HeartsStrengthSum'] = individual_prior['HeartsPoints'].apply(get_strength_sum,
-                                                                                   f=[-1, 3, 2.5, 1.8, 1.5, 1.5, 1.5,
-                                                                                      1.2])
+                                                                                   f=booster_coefficients)
     individual_prior['DiceStrengthSum'] = individual_prior['DicePoints'].apply(get_strength_sum,
-                                                                               f=[-1, 3, 2.5, 1.8, 1.5, 1.5, 1.5, 1.2])
+                                                                               f=booster_coefficients)
     individual_prior['CloverStrengthSum'] = individual_prior['CloverPoints'].apply(get_strength_sum,
-                                                                                   f=[-1, 3, 2.5, 1.8, 1.5, 1.5, 1.5,
-                                                                                      1.2])
+                                                                                   f=booster_coefficients)
 
     individual_prior['SpadeLen'] = individual_prior['SpadePoints'].apply(get_length)
     individual_prior['HeartsLen'] = individual_prior['HeartsPoints'].apply(get_length)
@@ -56,7 +55,8 @@ def fill_strength_and_trump_choice(individual_prior):
 
     individual_prior['TrumpCandidate'] = individual_prior_for_trump.idxmax(axis=1)
 
-    individual_prior_store = individual_prior[['CardSet', 'Probability', 'Strength', 'TrumpCandidate']]
+    individual_prior_store = individual_prior[['CardSet', 'Strength', 'TrumpCandidate', 'Mask']]
+    # [['CardSet', 'Probability', 'Strength', 'TrumpCandidate']]
 
     return individual_prior_store
 
@@ -103,9 +103,15 @@ def get_strength_sum(suit_points, f):
 
 # HELP 2 - CHECK IF A CARDSET HAS A PARTICULAR CARD
 def get_has_card_id_flag(card_set_distribution, card_id):
-    card_set_distribution_dupe = card_set_distribution['CardSet'].apply(get_idlist_from_idstr)
-    flag = card_set_distribution_dupe.apply(contains_card_id, args=(card_id,))
-    return flag
+    # card_set_distribution_dupe = card_set_distribution['CardSet'].apply(get_idlist_from_idstr)
+
+    # card_set_distribution_dupe = card_set_distribution.index.to_series().apply(get_idlist_from_idstr)
+    # flag = card_set_distribution_dupe.apply(contains_card_id, args=(card_id,))
+
+    set_bit = 2 ** card_id
+    flag = np.bitwise_and(card_set_distribution['Mask'], set_bit)
+
+    return flag != 0
 
 
 def contains_card_id(cardset_list, card_id):
@@ -114,7 +120,8 @@ def contains_card_id(cardset_list, card_id):
 
 # HELP 3 - REMOVE A CARD FROM A CARDSET
 def get_card_id_removed_from_cardset(cardset_strings, card_id):
-    return cardset_strings.apply(remove_card_from_cardset, args=(card_id,))
+    # return cardset_strings.apply(remove_card_from_cardset, args=(card_id,))
+    return cardset_strings.to_series().apply(remove_card_from_cardset, args=(card_id,))
 
 
 # ENG_TO_ID

@@ -5,6 +5,7 @@ from Intelligence import belief
 from DataModel.card import *
 from Intelligence import common_knowledge
 
+
 class Test(TestCase):
 
     def test_initial_belief(self):

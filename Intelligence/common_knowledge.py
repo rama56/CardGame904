@@ -136,3 +136,28 @@ def fill_prior_hands_simple(taken_cards, _all_cards, index, _all_card_sets):
         taken_cards.pop()
 
     return  # Necessary?
+
+
+def precompute_fill_prior_hands(taken_cards, index, _all_card_sets, mask=0):
+
+    # # Stop recursing if 8 cards can no longer be taken
+    if 8 - len(taken_cards) > index:
+        return
+
+    # Stop recursing if 8 cards are already taken
+    if len(taken_cards) == 8:
+        # _y = str(taken_cards.sort(reverse=True))
+        # _all_card_sets.append(_y)
+        _all_card_sets.append((str(taken_cards), mask))
+        return
+
+    # Take the next card from one of the positions from index
+    # (which is the position of last taken card)
+    for i in range(index, 0, -1):
+        taken_cards.append(i)
+        mask = mask + 2 ** i
+        precompute_fill_prior_hands(taken_cards, i-1, _all_card_sets, mask)
+        mask = mask - 2 ** i
+        taken_cards.pop()
+
+    return  # Necessary?
