@@ -39,8 +39,6 @@ def create_new_game():
     with open('helloworld.txt', 'r') as file:
         logging.info('File contents: {}'.format(file.read()))
 
-    time.sleep(20)
-
     start = timer()
     reset_history_new()
     end = timer()
