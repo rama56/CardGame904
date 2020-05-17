@@ -35,6 +35,8 @@ def hello():  # call method hello
 
 @app.route("/newgame")  # at the end point /newgame
 def create_new_game():
+    with open('helloworld.txt', 'r') as file:
+        logging.info('File contents: {}'.format(file.read()))
     start = timer()
     reset_history_new()
     end = timer()
