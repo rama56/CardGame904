@@ -156,7 +156,7 @@ def filter_cardsets_out(_card_ids_in_hand_mask):
     if precomputed_strengths is None:
         logging.info('session_helper - Inside if block')
 
-        data_files = glob.glob('local_data_*')
+        data_files = glob.glob('local_data_1*')
         logging.info('session_helper - after glob.glob')
 
         precomputed_strengths = pd.concat(pd.read_csv(file, names=['CardSet', 'Strength', 'TrumpCandidate', 'Mask'],
