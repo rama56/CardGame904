@@ -1,3 +1,4 @@
+import logging
 import random
 import copy
 # Modules
@@ -29,6 +30,8 @@ def deal_cards(players):
 
 class GameState:
     def __init__(self, card_hands=None):
+        logging.info('GameState - Inside constructor')
+
         # META DATA
         self.winning_team = -1
         self.metadata = Metadata()
@@ -53,6 +56,8 @@ class GameState:
                 self.players[i].cards = [card_module.get_card_from_id(x) for x in card_hands[i]]
 
         self.common_knowledge.set_common_prior()
+
+        logging.info('GameState - Before calculating beliefs')
 
         # CALCULATE BELIEF BASED ON CARDS RECEIVED.
         for x in self.players:

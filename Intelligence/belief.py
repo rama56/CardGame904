@@ -10,7 +10,6 @@ from GameHost import session_helper
 import copy
 import pandas as pd
 import numpy as np
-import swifter
 from timeit import default_timer as timer
 import logging
 
@@ -44,6 +43,8 @@ class Belief:
         # end __init
 
     def my_hand_cards(self, cards_in_hand, ck):
+
+        logging.info('Belief - Inside my_hand_cards')
 
         _card_ids_in_hand = [x.id for x in cards_in_hand]
         _card_engs_in_hand = [x.eng for x in cards_in_hand]

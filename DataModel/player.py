@@ -75,6 +75,8 @@ class Player:
     # end suggest_move()
 
     def rethink_belief(self, game_state, scenario, move, move_by):
+        logging.info('Player - Inside rethink_belief')
+
         _game_state = game_state  # weakref.ref(game_state) # GameState() #
         _common_knowledge = _game_state.common_knowledge
 

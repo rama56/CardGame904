@@ -149,13 +149,23 @@ def join_for_belief_scores(individual_prior):
 
 
 def filter_cardsets_out(_card_ids_in_hand_mask):
+    logging.info('session_helper - Inside filter_cardsets_out')
+
     global precomputed_strengths
 
     if precomputed_strengths is None:
+        logging.info('session_helper - Inside if block')
+
         data_files = glob.glob('local_data_*')
+        logging.info('session_helper - after glob.glob')
+
         precomputed_strengths = pd.concat(pd.read_csv(file, names=['CardSet', 'Strength', 'TrumpCandidate', 'Mask'],
                                             dtype={'CardSet': str, 'Strength': int, 'TrumpCandidate': int,
                                                    'Mask': int}).set_index('CardSet') for file in data_files)
+
+        logging.info('session_helper - finished reading the data files')
+
+    logging.info('session_helper - outside if')
 
     flag = np.bitwise_and(precomputed_strengths['Mask'], _card_ids_in_hand_mask)
 
