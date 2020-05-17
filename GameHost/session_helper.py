@@ -2,6 +2,7 @@
 import jsonpickle
 import pandas as pd
 import numpy as np
+import glob
 from flask import session
 from DataModel.game_state import *
 from io import StringIO
@@ -133,9 +134,10 @@ def join_for_belief_scores(individual_prior):
     global precomputed_strengths
 
     if precomputed_strengths is None:
-        precomputed_strengths = pd.read_csv('local_data.csv', names=['CardSet', 'Strength', 'TrumpCandidate', 'Mask'],
-                                            dtype={'CardSet': str, 'Strength': int, 'TrumpCandidate': int,
-                                                   'Mask': int}).set_index('CardSet')
+        data_files = glob.glob('local_data_*')
+        precomputed_strengths = pd.concat(pd.read_csv(file, names=['CardSet', 'Strength', 'TrumpCandidate', 'Mask'],
+                                                      dtype={'CardSet': str, 'Strength': int, 'TrumpCandidate': int,
+                                                             'Mask': int}).set_index('CardSet') for file in data_files)
 
     card_set = individual_prior['CardSet'].values
     return precomputed_strengths.loc[card_set, :]
@@ -150,9 +152,10 @@ def filter_cardsets_out(_card_ids_in_hand_mask):
     global precomputed_strengths
 
     if precomputed_strengths is None:
-        precomputed_strengths = pd.read_csv('local_data.csv', names=['CardSet', 'Strength', 'TrumpCandidate', 'Mask'],
+        data_files = glob.glob('local_data_*')
+        precomputed_strengths = pd.concat(pd.read_csv(file, names=['CardSet', 'Strength', 'TrumpCandidate', 'Mask'],
                                             dtype={'CardSet': str, 'Strength': int, 'TrumpCandidate': int,
-                                                   'Mask': int}).set_index('CardSet')
+                                                   'Mask': int}).set_index('CardSet') for file in data_files)
 
     flag = np.bitwise_and(precomputed_strengths['Mask'], _card_ids_in_hand_mask)
 
