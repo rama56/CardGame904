@@ -17,6 +17,7 @@ import os
 from flask_cors import CORS
 import jsonpickle
 from timeit import default_timer as timer
+import time
 
 import logging
 logging.getLogger().setLevel(logging.DEBUG)
@@ -37,6 +38,9 @@ def hello():  # call method hello
 def create_new_game():
     with open('helloworld.txt', 'r') as file:
         logging.info('File contents: {}'.format(file.read()))
+
+    time.sleep(20)
+
     start = timer()
     reset_history_new()
     end = timer()
