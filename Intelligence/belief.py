@@ -94,7 +94,9 @@ class Belief:
                 self_prior['TrumpCandidate'] = trump_card.suite.value
                 self_prior['Mask'] = arithmetic.get_mask(_card_ids_in_hand)
                 self_prior['Probability'] = 1
-                self_prior = self_prior.set_index('CardSet')
+                self_prior = self_prior[['Probability', 'Strength', 'TrumpCandidate', 'Mask']]
+
+                # self_prior = self_prior.set_index('CardSet')
                 self.nature_hands[i] = self_prior
             else:
                 prior_copy = copy.deepcopy(individual_prior_store)
@@ -280,10 +282,10 @@ class Belief:
         # Update belief card_set_distribution's CardSet based on the 'Knowledge' gained.
 
         # none_rows = card_set_distribution[card_set_distribution['CardSet'].isnull()]
-        none_rows = card_set_distribution[card_set_distribution.index.isnull()]
-
-        if none_rows.shape[0] > 0:
-            a = 5
+        # none_rows = card_set_distribution[card_set_distribution.index.isnull()]
+        #
+        # if none_rows.shape[0] > 0:
+        #     a = 5
 
         start = timer()
         has_card_id = belief_helper.get_has_card_id_flag(card_set_distribution, card_id)    # parallelize_dataframe(card_set_distribution, belief_helper.get_has_card_id_flag, param=card_id)

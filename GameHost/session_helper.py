@@ -117,6 +117,9 @@ def precompute_beliefs():
 
     individual_prior_store = parallelize_dataframe(individual_prior, belief_helper.fill_strength_and_trump_choice)
 
+    # Try omitting card-set
+    individual_prior_store = individual_prior_store[['Strength', 'TrumpCandidate', 'Mask']]
+
     individual_prior_store.to_csv('local_data.csv', index=False, header=False)
 
     cwd = os.getcwd()
@@ -154,27 +157,31 @@ def filter_cardsets_out(_card_ids_in_hand_mask):
     global precomputed_strengths
 
     if precomputed_strengths is None:
-        logging.info('session_helper - Inside if block')
-
-        data_files = glob.glob('local_data_*')
-        logging.info('session_helper - after glob.glob')
-
-        precomputed_strengths = None
-        for i in range(10):
-            logging.info('session_helper - going to read file ' + str(i))
-
-            file = "local_data_" + str(i)
-            read_df = pd.read_csv(file, names=['CardSet', 'Strength', 'TrumpCandidate', 'Mask'],
-                                            dtype={'CardSet': str, 'Strength': int, 'TrumpCandidate': int,
-                                                   'Mask': int}).set_index('CardSet')
-            logging.info('session_helper - done reading file ' + str(i))
-
-            precomputed_strengths = pd.concat([precomputed_strengths, read_df])
-            logging.info('session_helper - done concatenating file ' + str(i))
+        # logging.info('session_helper - Inside if block')
+        #
+        # data_files = glob.glob('local_data_*')
+        # logging.info('session_helper - after glob.glob')
+        #
+        # precomputed_strengths = None
+        # for i in range(10):
+        #     logging.info('session_helper - going to read file ' + str(i))
+        #
+        #     file = "local_data_" + str(i)
+        #     read_df = pd.read_csv(file, names=['CardSet', 'Strength', 'TrumpCandidate', 'Mask'],
+        #                                     dtype={'CardSet': str, 'Strength': int, 'TrumpCandidate': int,
+        #                                            'Mask': int}).set_index('CardSet')
+        #     logging.info('session_helper - done reading file ' + str(i))
+        #
+        #     precomputed_strengths = pd.concat([precomputed_strengths, read_df])
+        #     logging.info('session_helper - done concatenating file ' + str(i))
 
         # precomputed_strengths = pd.concat(pd.read_csv(file, names=['CardSet', 'Strength', 'TrumpCandidate', 'Mask'],
         #                                     dtype={'CardSet': str, 'Strength': int, 'TrumpCandidate': int,
         #                                            'Mask': int}).set_index('CardSet') for file in data_files)
+
+        precomputed_strengths = pd.read_csv('local_data.csv', names=['Strength', 'TrumpCandidate', 'Mask'],
+                                            dtype={'Strength': int, 'TrumpCandidate': int,
+                                                   'Mask': int})
 
         logging.info('session_helper - finished reading the data files')
 
@@ -183,7 +190,6 @@ def filter_cardsets_out(_card_ids_in_hand_mask):
     flag = np.bitwise_and(precomputed_strengths['Mask'], _card_ids_in_hand_mask)
 
     filtered = precomputed_strengths[flag == 0]
-
 
     prob = arithmetic.choose_prob(24, 8)
     filtered['Probability'] = prob

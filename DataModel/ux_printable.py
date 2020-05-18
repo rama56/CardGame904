@@ -21,9 +21,10 @@ class UxBelief:
             n = min(n, b.shape[0])
 
             top20 = b.nlargest(n, 'Probability').copy(deep=True)
-            top20_reset = top20.reset_index()
+            # top20_reset = top20.reset_index()
+            top20['CardSet'] = top20['Mask'].apply(card.mask_to_cardset)
             col_order = ['CardSet', 'Probability', 'Strength', 'TrumpCandidate']
-            top20_reset_reordered = top20_reset[col_order]
+            top20_reset_reordered = top20[col_order]
 
             top20_list = top20_reset_reordered.values.tolist()
 

@@ -36,8 +36,8 @@ def hello():  # call method hello
 
 @app.route("/newgame")  # at the end point /newgame
 def create_new_game():
-    with open('helloworld.txt', 'r') as file:
-        logging.info('File contents: {}'.format(file.read()))
+    # with open('helloworld.txt', 'r') as file:
+    #     logging.info('File contents: {}'.format(file.read()))
 
     start = timer()
     reset_history_new()
@@ -229,11 +229,11 @@ def make_move():
 
 if __name__ == "__main__":  # on running python app.py
 
-    # logging.info('Precomputation of beliefs started.')
-    # start = timer()
-    # session_helper.precompute_beliefs()
-    # end = timer()
-    # elapsed = end - start
-    # logging.info('Precomputation of beliefs completed. Time elapsed = ' + str(elapsed))
+    logging.info('Precomputation of beliefs started.')
+    start = timer()
+    session_helper.precompute_beliefs()
+    end = timer()
+    elapsed = end - start
+    logging.info('Precomputation of beliefs completed. Time elapsed = ' + str(elapsed))
 
     app.run(debug=True, host='0.0.0.0')  # run the flask app

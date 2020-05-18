@@ -115,3 +115,24 @@ def get_remaining_cards(cards):
     remaining_cards = [card for card in full_deck if card.id not in cards_ids]
 
     return remaining_cards
+
+
+def mask_to_cardset(mask):
+
+    cardset = []
+    i = 0
+    while mask != 0:
+        bit = mask % 2
+        if bit == 1:
+            cardset.append(i)
+
+        mask = mask//2
+        i = i+1
+
+    cardset.sort(reverse=True)
+    return str(cardset)
+
+
+
+
+

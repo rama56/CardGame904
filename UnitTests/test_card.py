@@ -2,7 +2,7 @@ from unittest import TestCase
 
 #Internal dependencies
 from DataModel import game_state, player, card
-
+from Intelligence import arithmetic
 
 class Test(TestCase):
 
@@ -45,3 +45,17 @@ class Test(TestCase):
         # Check for no Kings
         kings = sum(x.suite == card.Number.King for x in cards)
         assert kings == 0
+
+    def test_mask_to_cardset(self):
+
+        # card_ids = [2, 4, 7, 11, 12, 25, 26, 32]
+
+        card_ids = [1, 4, 7, 11, 12, 25, 26, 32]
+        test_lhs = str(card_ids.sort(reverse=True))
+
+        mask = arithmetic.get_mask(card_ids)
+        # mask = 7583302312
+
+        cardset = card.mask_to_cardset(mask)
+
+        assert  test_lhs == cardset
