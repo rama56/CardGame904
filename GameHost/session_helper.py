@@ -138,9 +138,9 @@ def join_for_belief_scores(individual_prior):
 
     if precomputed_strengths is None:
         data_files = glob.glob('local_data_*')
-        precomputed_strengths = pd.concat(pd.read_csv(file, names=['CardSet', 'Strength', 'TrumpCandidate', 'Mask'],
-                                                      dtype={'CardSet': str, 'Strength': int, 'TrumpCandidate': int,
-                                                             'Mask': int}).set_index('CardSet') for file in data_files)
+        precomputed_strengths = pd.concat(pd.read_csv(file, names=['Strength', 'TrumpCandidate', 'Mask'],
+                                                      dtype={'Strength': int, 'TrumpCandidate': int,
+                                                             'Mask': int}) for file in data_files)
 
     card_set = individual_prior['CardSet'].values
     return precomputed_strengths.loc[card_set, :]
@@ -159,7 +159,7 @@ def filter_cardsets_out(_card_ids_in_hand_mask):
     if precomputed_strengths is None:
         # logging.info('session_helper - Inside if block')
         #
-        # data_files = glob.glob('local_data_*')
+        data_files = glob.glob('local_data_*')
         # logging.info('session_helper - after glob.glob')
         #
         # precomputed_strengths = None
@@ -175,13 +175,13 @@ def filter_cardsets_out(_card_ids_in_hand_mask):
         #     precomputed_strengths = pd.concat([precomputed_strengths, read_df])
         #     logging.info('session_helper - done concatenating file ' + str(i))
 
-        # precomputed_strengths = pd.concat(pd.read_csv(file, names=['CardSet', 'Strength', 'TrumpCandidate', 'Mask'],
-        #                                     dtype={'CardSet': str, 'Strength': int, 'TrumpCandidate': int,
-        #                                            'Mask': int}).set_index('CardSet') for file in data_files)
-
-        precomputed_strengths = pd.read_csv('local_data.csv', names=['Strength', 'TrumpCandidate', 'Mask'],
+        precomputed_strengths = pd.concat(pd.read_csv(file, names=['Strength', 'TrumpCandidate', 'Mask'],
                                             dtype={'Strength': int, 'TrumpCandidate': int,
-                                                   'Mask': int})
+                                                   'Mask': int}) for file in data_files)
+
+        # precomputed_strengths = pd.read_csv('local_data.csv', names=['Strength', 'TrumpCandidate', 'Mask'],
+        #                                     dtype={'Strength': int, 'TrumpCandidate': int,
+        #                                            'Mask': int})
 
         logging.info('session_helper - finished reading the data files')
 
