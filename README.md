@@ -54,7 +54,8 @@ KNOWN HOLES :
 2. Common knowledge doesn't have nature hands, only has nature_cards.
 3. Play a move feature is not started.
 4. Change in belief isn't propogating beyond first person.
-        
+
+
 Useful links:
 
 https://stackoverflow.com/questions/10791588/getting-container-parent-object-from-within-python
@@ -104,3 +105,6 @@ INFO:root:Get GameState from history and put in move. Time elapsed = 2.967000000
 INFO:root:Altered state. Time elapsed = 2.7832180940000057
 INFO:root:Saved GameState object to history. Time elapsed = 0.16606324400001427
 INFO:root:Trimmed belief. Converted to JSON for return to client. Time elapsed = 0.43142237899999714
+
+September 12th - For being unable to improve the perf, created a new branch donkey_main to create a miniature of 
+the game 'Ass' with just 16 cards.
