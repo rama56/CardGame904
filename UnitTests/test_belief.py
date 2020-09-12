@@ -137,6 +137,29 @@ class Test(TestCase):
         top_about_2 = _belief.nature_hands[2].nlargest(30, 'Probability', keep='first')
         top_about_3 = _belief.nature_hands[3].nlargest(30, 'Probability', keep='first')
 
-        x = 5
+    def test_bid_belief_change_hands_and_cards(self):
+        cards_engs = ['TwoSpade', 'ThreeSpade', 'AceSpade', 'TenSpade',
+                      'KingHearts',
+                      'TwoDice',
+                      'ThreeClover', 'JackClover']
 
+        cards = [get_card_from_eng(x) for x in cards_engs]
+
+        # bid_val = belief.get_strength_from_cardset(car)
+
+        _belief = belief.Belief(0)
+        ck = common_knowledge.CommonKnowledge()
+        ck.set_common_prior()
+
+        _belief.my_hand_cards(cards, ck)
+
+        _belief.bid_strength = [None, (0, 500), (0, 500), (700, 740)]
+
+        _belief.bidding_over()
+
+        top_about_1 = _belief.nature_hands[1].nlargest(30, 'Probability', keep='first')
+        top_about_2 = _belief.nature_hands[2].nlargest(30, 'Probability', keep='first')
+        top_about_3 = _belief.nature_hands[3].nlargest(30, 'Probability', keep='first')
+
+        x = 5
 

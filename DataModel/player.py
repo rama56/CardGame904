@@ -6,7 +6,6 @@ from DataModel import card
 from DataModel.game_state import *
 from DataModel.metadata import GamePhase
 from Intelligence import belief
-from Intelligence.belief import Belief
 
 
 class Position(enum.Enum):
@@ -42,7 +41,7 @@ class Player:
 
         # Beliefs about Trump suit.
         # Beliefs about distribution of cards of other hands.
-        self.belief = Belief(position.value)
+        self.belief = belief.Belief(position.value)
 
     def suggest_move(self, _game_state):
         # _game_state = weakref.ref(game_state)

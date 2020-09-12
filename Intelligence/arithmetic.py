@@ -73,3 +73,53 @@ def get_mask(_card_ids_in_hand):
         mask = mask + 2 ** i
 
     return mask
+
+
+########## SHAPING NATURE HANDS ###############
+
+def shape_9_1(dist_heavy, dist_light, make_99_01_flag):
+    heavy_sum = dist_heavy['Probability'].sum()
+    light_sum = dist_light['Probability'].sum()
+    heavy_mass = 0.9
+    light_mass = 0.1
+
+    if make_99_01_flag:
+        heavy_mass = 0.999
+        light_mass = 0.001
+
+    heavy_factor = heavy_mass / heavy_sum
+    light_factor = light_mass / light_sum
+    dist_heavy['Probability'] = dist_heavy['Probability'] * heavy_factor
+    dist_light['Probability'] = dist_light['Probability'] * light_factor
+
+def shape_shrink_heavy_gap(dist_heavy, dist_light, constant_factor):
+    # Add to heavy, a fraction (1/c_f) of heavy's gap.
+    # Ex: H -> 0.8, L -> 0.2, const_factor = 5
+    # => H -> 0.84, L - 0.16
+    _gap = 1 - dist_heavy['Probability'].sum()
+    _heavy_sum = dist_heavy['Probability'].sum()
+
+    _factor = (_heavy_sum + _gap / constant_factor) / _heavy_sum
+    dist_heavy['Probability'] = dist_heavy['Probability'] * _factor
+
+    return dist_heavy, dist_light
+
+
+def shape_shrink_light(dist_heavy, dist_light, constant_factor):
+    # Reduce light's weight by dividing by a constant_factor
+
+    dist_light['Probability'] = dist_light['Probability'] / constant_factor
+
+    return dist_heavy, dist_light
+
+
+# Multiply heavy set by constant_factor
+def shape_boost_heavy(dist_heavy, dist_light, constant_factor):
+    dist_heavy['Probability'] = dist_heavy['Probability'] * constant_factor
+
+
+# Scale it up/down to sum up to 1
+def normalize_distribution(dist):
+    _new_sum = dist['Probability'].sum()
+    dist['Probability'] = dist['Probability'] / _new_sum
+    return dist

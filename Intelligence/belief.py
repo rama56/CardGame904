@@ -115,10 +115,8 @@ class Belief:
     # end my_hand_cards()
 
     def bidding_over(self):
-        # _nature_cards_symmetric = {'Two': [0, 0, 0, 0], 'Three': [0, 0, 0, 0], 'Jack': [0, 0, 0, 0],
-        # 'Nine': [0, 0, 0, 0],  'Ace': [0, 0, 0, 0], 'Ten': [0, 0, 0, 0], 'King': [0, 0, 0, 0], 'Queen': [0, 0, 0, 0]}
-        # copy.deepcopy(self.nature_cards) # nature_cards is gonna go for a toss now !
 
+        # Shape the Nature Hands.
         for i in range(4):
             if i == self.player_id:
                 # I have nothing to do about my belief about myself. They're full set (deterministic - prob 0 or 1)
@@ -139,31 +137,51 @@ class Belief:
             dist_heavy = distribution.loc[heavy_flag]
             dist_light = distribution.loc[~heavy_flag]
 
-            heavy_sum = dist_heavy['Probability'].sum()
-            light_sum = dist_light['Probability'].sum()
+            # dist_heavy, dist_light = arithmetic.shape_9_1(dist_heavy, dist_light, min_val == 0)
 
-            heavy_mass = 0.9
-            light_mass = 0.1
+            constant_factor = 5
 
-            if min_val == 0:
-                heavy_mass = 0.999
-                light_mass = 0.001
+            # dist_heavy, dist_light = arithmetic.shape_boost_heavy(dist_heavy, dist_light, constant_factor)
+            # dist_heavy, dist_light = arithmetic.shape_shrink_heavy_gap(dist_heavy, dist_light, constant_factor)
+            dist_heavy, dist_light = arithmetic.shape_shrink_light(dist_heavy, dist_light, constant_factor)
 
-            heavy_factor = heavy_mass / heavy_sum
-            light_factor = light_mass / light_sum
+            _new_distribution = pd.concat([dist_heavy, dist_light])
 
-            dist_heavy['Probability'] = dist_heavy['Probability'] * heavy_factor
-            dist_light['Probability'] = dist_light['Probability'] * light_factor
+            _new_distribution = arithmetic.normalize_distribution(_new_distribution)
 
-            new_distribution = pd.concat([dist_heavy, dist_light])
-            new_sum = new_distribution['Probability'].sum()
-            assert 0.999 < new_sum < 1.001
+            _sum = _new_distribution['Probability'].sum()
+            assert 0.99 < _sum < 1.01
 
-            self.nature_hands[i] = new_distribution
-            # # TODO : Work on how nature_cards gets affected. My approach feels wrong. Maybe, get it from
-            # #  the fraction in nature_hands.
-            # heavy_count = dist_heavy['Probability'].shape[0]
-            # light_count = dist_light['Probability'].shape[0]
+            self.nature_hands[i] = _new_distribution
+
+        # Shape the Nature Cards.
+        _all_cards_out_ids = [x.id for x in self._all_cards_still_out]
+
+        for c_id in _all_cards_out_ids:
+            card_eng = id_eng_mapping[c_id]
+            bit_mask = 2 ** c_id
+
+            _dist = [0] * 4
+            for i in range(4):
+                if i == self.player_id:
+                    _dist[i] = 0
+                    continue
+
+                _hand = self.nature_hands[i]
+
+                _flag = np.bitwise_and(_hand['Mask'], bit_mask)
+                _filtered = _hand[_flag != 0]
+                _new_prob = _filtered['Probability'].sum()
+
+                _dist[i] = float(_new_prob)  # actually _sum/1
+
+            _sum = sum(_dist)
+            _new_dist = [x/_sum for x in _dist]
+
+            self.nature_cards[card_eng] = _new_dist
+        # END for c_id in _all_cards_out_ids
+
+    # END bidding_over
 
     #  Observation - 'posseser' has 'card'. ENG_TO_ID
     def has_card(self, card_id, posseser_id, situation=None):
@@ -337,28 +355,30 @@ class Belief:
         dist_heavy = distribution.loc[trump_flag]
         dist_light = distribution.loc[~trump_flag]
 
-        heavy_sum = dist_heavy['Probability'].sum()
-        light_sum = dist_light['Probability'].sum()
+        # dist_heavy, dist_light = arithmetic.shape_9_1(dist_heavy, dist_light, min_val == 0)
 
-        heavy_mass = 0.99
-        light_mass = 0.01
+        constant_factor = 5
+        dist_heavy, dist_light = arithmetic.shape_shrink_light(dist_heavy, dist_light, constant_factor)
 
-        heavy_factor = heavy_mass / heavy_sum
-        light_factor = light_mass / light_sum
+        _new_distribution = pd.concat([dist_heavy, dist_light])
 
-        dist_heavy['Probability'] = dist_heavy['Probability'] * heavy_factor
-        dist_light['Probability'] = dist_light['Probability'] * light_factor
+        _new_distribution = arithmetic.normalize_distribution(_new_distribution)
 
-        new_distribution = pd.concat([dist_heavy, dist_light])
-        assert 0.99 < sum(new_distribution['Probability']) < 1.01
+        _sum = _new_distribution['Probability'].sum()
+        assert 0.99 < _sum < 1.01
 
-        self.nature_hands[_trump_setter] = new_distribution
+        self.nature_hands[_trump_setter] = _new_distribution
 
 # ORIGINAL CODE
 
-def get_strength_from_cardset_string(cardset):
-    card_list = ast.literal_eval(cardset)
-    cards = [get_card_from_eng(x) for x in card_list]
+
+def get_strength_from_cardset_string(cardset_str):
+    card_list = ast.literal_eval(cardset_str)
+    return get_strength_from_cardset(card_list)
+
+
+def get_strength_from_cardset(cardset):
+    cards = [get_card_from_eng(x) for x in cardset]
     return get_strength(cards)
 
 
